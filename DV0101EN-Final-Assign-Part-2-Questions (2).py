@@ -33,31 +33,25 @@ year_list = [i for i in range(1980, 2024, 1)]
 #---------------------------------------------------------------------------------------
 # Create the layout of the app
 app.layout = html.Div([
-    #TASK 2.1 Add title to the dashboard
-    html.H1('Automobile Sales Statistics Dashboard', 
-                                style={'textAlign': 'center', 'color': '#503D36',
-                                'font-size': 24})
-    #TASK 2.2: Add two dropdown menus
-    html.Div([
-        html.Label("Select Statistics:"),
-          dcc.Dropdown(id='dropdown-statistics', 
-                   options=[
-                           {'label': 'Yearly Statistics', 'value': 'Yearly Statistics'},
-                           {'label': 'Recession Period Statistics', 'value': 'Recession Period Statistics'}
-                           ],
-                  placeholder='Select a report type',
-                  value='Select Statistics'
-                  )
-            ]),
-    html.Div(dcc.Dropdown(
-            id='select-year',
-            options=[{'label': i, 'value': i} for i in year_list],
-            placeholder='Select-year'
-            value='Select-year'
-        )),
-    html.Div([#TASK 2.3: Add a division for output display
-    html.Div(id='output-container', className='chart-grid', style={'display': 'flex'}),
-])
+      html.H1("Automobile Statistics Dashboard"),
+      html.Div([
+          html.Label("Select Statistics:"),
+          dcc.Dropdown(
+              id='dropdown-statistics',
+              options=dropdown_options,
+              value='Select Statistics'
+          )
+      ]),
+      html.Div(dcc.Dropdown(
+              id='select-year',
+              options=[{'label': i, 'value': i} for i in year_list],
+              value='Select-year'
+          )),
+      #html.Div(id='input-year'),
+      html.Div([
+      html.Div(id='output-container', className='chart-grid', style={'display': 'flex'}),
+      ])
+  ])
 #TASK 2.4: Creating Callbacks
 # Define the callback function to update the input container based on the selected statistics
 @app.callback(
@@ -120,25 +114,28 @@ def update_output_container(selected_statistics,input_year):
 # Plot 4 bar chart for the effect of unemployment rate on vehicle type and sales
         #grouping data for plotting
 	# Hint:Use unemployment_rate,Vehicle_Type and Automobile_Sales columns
-       unemp_data= recession_data.groupby(['unemployment_rate', 'Vehicle_Type'])['Automobile_Sales'].mean().reset_index()
-        R_chart4 = dcc.Graph(figure=px.bar(unemp_data,
-        x='unemployment_rate',
-        y='Automobile_Sales',
-        color='Vehicle_Type',
-        labels={'unemployment_rate': 'Unemployment Rate', 'Automobile_Sales': 'Average Automobile Sales'},
-        title='Effect of Unemployment Rate on Vehicle Type and Sales'))
+unemp_data= recession_data.groupby(['Vehicle_Type', 'unemployment_rate'])['Automobile_Sales'].mean().reset_index()
+R_chart4 = dcc.Graph(
+              figure=px.bar(
+                  unemp_data,
+                  x='unemployment_rate',
+                  y='Automobile_Sales',
+                  color='Vehicle_Type',
+                  labels={'unemployment_rate': 'Unemployment Rate', 'Automobile_Sales': 'Average Automobile Sales'},
+                  title="Effect of Unemployment Rate on Sales of various Vehicle Types")
+          )
 
 
-        return [
-             html.Div(className='chart-item', children=[html.Div(children=R_chart1),html.Div(children=R_chart2)],style={'display': 'flex'}),
-            html.Div(className='chart-item', children=[html.Div(children=R_chart3),html.Div(children=R_chart4)],style={'display': 'flex'})
-            ]
+return [
+        html.Div(className='chart-item', children=[html.Div(children=R_chart1),html.Div(children=R_chart2)],style={'display': 'flex'}),
+        html.Div(className='chart-item', children=[html.Div(children=R_chart3),html.Div(children=R_chart4)],style={'display': 'flex'})
+       ]
 
 # TASK 2.6: Create and display graphs for Yearly Report Statistics
  # Yearly Statistic Report Plots
     # Check for Yearly Statistics.                             
-    elif (input_year and selected_statistics=='Yearly Statistics') :
-        yearly_data = data[data['Year'] == input_year]
+elif (input_year and selected_statistics=='Yearly Statistics') :
+    yearly_data = data[data['Year'] == input_year]
                               
 
                               
@@ -190,4 +187,3 @@ def update_output_container(selected_statistics,input_year):
 # Run the Dash app
 if __name__ == '__main__':
     app.run_server(debug=True)
-
